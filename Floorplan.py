@@ -1,56 +1,44 @@
 from manim import *
 
-class FloorplanWithCenteredLabels(Scene):
+class DrawRooms(Scene):
     def construct(self):
-        # Define room coordinates, width, and height
-        room1_left = -4
-        room1_width = 6
-        room1_height = 4
+        # getting room data from the algorithm 
+        room_data = {
+            'room_x': [0., 1., 0.],
+            'room_y': [0., 1., 1.],
+            'room_width': [2., 1., 1.],
+            'room_height': [1., 1., 1.]
+        }
+
+        # making 4 lines to define a room 
+        rooms = VGroup()
+        labels = VGroup()
+
+        for i in range(len(room_data['room_x'])):
+            x = room_data['room_x'][i]
+            y = room_data['room_y'][i]
+            width = room_data['room_width'][i]
+            height = room_data['room_height'][i]
+
+            top_left = LEFT * x + UP * y  
+            top_right = LEFT * (x + width) + UP * y  
+            bottom_left = LEFT * x + UP * (y + height)  
+            bottom_right = LEFT * (x + width) + UP * (y + height)  
+
+            room = VGroup(
+                Line(top_left, top_right),
+                Line(top_right, bottom_right),
+                Line(bottom_right, bottom_left),
+                Line(bottom_left, top_left),
+            )
+
+            label = Text(f"Room {i+1}", color=WHITE).scale(0.5)  # Scaling of label can be a problem 
+            label.next_to(room.get_center(), UP, buff=SMALL_BUFF)  
+
+            rooms.add(room)
+            labels.add(label)
+
         
-        # Create room1 with a thicker boundary
-        room1 = Rectangle(
-            width=room1_width, 
-            height=room1_height, 
-            color=WHITE, 
-            stroke_width=10.0,  # Adjust the stroke width for a thicker boundary
-            stroke_color=WHITE  # Set the stroke color to differentiate from the fill color
-        ).shift(
-            LEFT * (room1_left + room1_width / 2)
-        )
-        
-        # Calculate the center of room1
-        room1_center = room1.get_center()
-        
-        # Define room2 coordinates, width, and height
-        room2_left = room1_left + room1_width
-        room2_width = 5
-        room2_height = 3
-        
-        # Create room2
-        room2 = Rectangle(width=room2_width, height=room2_height, color=WHITE).shift(
-            LEFT * (room2_left + room2_width / 2)
-        )
-        
-        # Calculate the center of room2
-        room2_center = room2.get_center()
-        
-        # Create a common wall using Cartesian coordinates
-        '''common_wall = Rectangle(
-            width=room2_left - room1_left,  # Width is the distance between the rooms
-            height=room1_height,  # Height is the same as room1
-            color=GRAY,
-            fill_opacity=1,
-        ).next_to(room2, LEFT, buff=0)'''
-        
-        '''# Create a door
-        door = Rectangle(width=0.2, height=1, color=RED)
-        door.next_to(common_wall, RIGHT, buff=0.1)'''
-        
-        # Create labels for rooms and place them at the center of each room
-        label_room1 = Text("Room 1", color=WHITE).move_to(room1_center)
-        label_room2 = Text("Room 2", color=WHITE).move_to(room2_center)
-        
-        # Add everything to the scene
-        self.play(Create(room1), Create(room2))
-        self.play(Write(label_room1), Write(label_room2))
+        self.play(*[Create(room) for room in rooms])
+        self.play(*[Write(label) for label in labels])
         self.wait(2)
