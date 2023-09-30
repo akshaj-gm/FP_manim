@@ -152,7 +152,7 @@ def draw_rdg(graph_data,count,pen,mode,color_list,room_names,origin):
             value+=1
 
 def main():                
-    graph = {}
+    graph = {'room_x': [0., 1., 0.], 'room_y': [0., 1., 1.], 'room_width': [2., 1., 1.], 'room_height': [1., 1., 1.], 'area': [], 'extranodes': [], 'mergednodes': [], 'irreg_nodes': []}
     graph_data = {
     'room_x': graph.room_x,
     'room_y': graph.room_y,
@@ -163,4 +163,5 @@ def main():
     'mergednodes': graph.mergednodes,
     'irreg_nodes': graph.irreg_nodes1
     }
+    draw_rdg(graph_data)
 
