@@ -38,7 +38,7 @@ class ManyCircles(Scene):
         line1.shift(OUT)
         # line1.to_back()
         line2.shift(OUT)
-        # line2.to_back()
+        # line2.to_back()   
         line3.shift(OUT)
         # line3.to_back()
         self.add(line1, line2, line3)

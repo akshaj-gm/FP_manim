@@ -1,3 +1,6 @@
+import numpy as np
+import math
+from manim import *
 def find_points(x1, y1, x2, y2,
                x3, y3, x4, y4):
     x7 = max(x1, x3)
@@ -24,7 +27,7 @@ def find_points(x1, y1, x2, y2,
     
     return [(x7,y7), (x8,y8)],first_rect,second_rect
 
-def draw_rdg(graph_data,count,pen,mode,color_list,room_names,origin):
+def draw_rdg(graph_data,count,mode,color_list,room_names,origin):
     coordinates = {}
     for i in range(graph_data['room_x'].shape[0]):
         data = []
@@ -81,10 +84,10 @@ def draw_rdg(graph_data,count,pen,mode,color_list,room_names,origin):
         coordinates[i][2] = sorted(coordinates[i][2], key = lambda x: x[0], reverse=True)
         coordinates[i][3] = sorted(coordinates[i][3], key = lambda x: x[1], reverse=True)
 
-    pen.width(1.5)
-    pen.color('black')
-    pen.hideturtle()
-    pen.penup()
+    # pen.width(1.5)
+    # pen.color('black')
+    # pen.hideturtle()
+    # pen.penup()
     width= np.amax(graph_data['room_width'])
     height = np.amax(graph_data['room_height'])
     if(width == 0):
@@ -97,59 +100,75 @@ def draw_rdg(graph_data,count,pen,mode,color_list,room_names,origin):
     # origin = {'x': graph_data[origin, 'y': -550}
     dim =[0,0]
     origin = {'x': origin - 400, 'y': -100}
+    rooms = VGroup()
     for i in range(graph_data['room_x'].shape[0]):
+        room = VGroup()
+        labels = VGroup()
         if graph_data['room_width'][i] == 0 or i in graph_data['extranodes']:
             continue
-        if i in graph_data['mergednodes']:
-            pen.fillcolor(color_list[graph_data['irreg_nodes'][graph_data['mergednodes'].index(i)]])
-        else:
-            pen.fillcolor(color_list[i])
-        pen.begin_fill()
+        # if i in graph_data['mergednodes']:
+        #     pen.fillcolor(color_list[graph_data['irreg_nodes'][graph_data['mergednodes'].index(i)]])
+        # else:
+        #     pen.fillcolor(color_list[i])
+        # pen.begin_fill()
+        pen_pos = 0
+        prev_pos = None
         for dir in range(4):
             for idx in range(len(coordinates[i][dir])):
                 if(idx%2 == 0):
-                    pen.setposition(coordinates[i][dir][idx][0] * scale + origin['x'],
+                    if pen_pos == 0:
+                        prev_pos = (coordinates[i][dir][idx][0] * scale + origin['x'],
                                     coordinates[i][dir][idx][1] * scale + origin['y'])
-                    pen.pendown()
+                    pen_pos=1
                 else:
-                    pen.setposition(coordinates[i][dir][idx][0] * scale + origin['x'],
-                                    coordinates[i][dir][idx][1] * scale + origin['y'])
-                    pen.penup()
-        pen.end_fill()
-        if(graph_data['room_x'][i] + graph_data['room_width'][i]> dim[0]):
-            dim[0] = graph_data['room_x'][i] + graph_data['room_width'][i]
-        if(graph_data['room_y'][i] + graph_data['room_height'][i]> dim[1] ):
-            dim[1] = graph_data['room_y'][i] + graph_data['room_height'][i]
+                    if pen_pos == 1:
+                        room.add(Line(prev_pos, (coordinates[i][dir][idx][0] * scale + origin['x'],coordinates[i][dir][idx][1] * scale + origin['y'])))
+                    pen_pos = 0
+        # pen.end_fill()
+        # if(graph_data['room_x'][i] + graph_data['room_width'][i]> dim[0]):
+        #     dim[0] = graph_data['room_x'][i] + graph_data['room_width'][i]
+        # if(graph_data['room_y'][i] + graph_data['room_height'][i]> dim[1] ):
+        #     dim[1] = graph_data['room_y'][i] + graph_data['room_height'][i]
+        rooms.add(room)
+
     x_index = int(np.where(graph_data['room_x'] == np.min(graph_data['room_x']))[0][0])
     y_index = int(np.where(graph_data['room_y'] == np.max(graph_data['room_y']))[0][0])
-    pen.setposition((graph_data['room_x'][x_index]) * scale + origin['x'],(graph_data['room_y'][y_index] + graph_data['room_height'][y_index]) * scale + origin['y'] + 200)  
-    pen.write(count,font=("Arial", 20, "normal"))
-    pen.penup()
+    new_pos = ((graph_data['room_x'][x_index]) * scale + origin['x'],(graph_data['room_y'][y_index] + graph_data['room_height'][y_index]) * scale + origin['y'] + 200)
+    # pen.setposition  
+    # pen.write(count,font=("Arial", 20, "normal"))
+    # pen.penup()
     for i in range(graph_data['room_x'].shape[0]):
         if i in graph_data['extranodes']:
             continue
-        pen.color('black')
+        # pen.color('black')
         if(i not in graph_data['mergednodes']):
-            pen.setposition(((2 * graph_data['room_x'][i] ) * scale / 2) + origin['x'] + 5,
+            # pen.setposition(((2 * graph_data['room_x'][i] ) * scale / 2) + origin['x'] + 5,
+            #                 ((2 * graph_data['room_y'][i] + graph_data['room_height'][i]) * scale / 2) + origin['y'])
+            room1_center = (((2 * graph_data['room_x'][i] ) * scale / 2) + origin['x'] + 5,
                             ((2 * graph_data['room_y'][i] + graph_data['room_height'][i]) * scale / 2) + origin['y'])
-            pen.write(i)
-            pen.penup()
+            label = Text("Room x", color=WHITE).move_to(room1_center)
+            # pen.write(i)
+            # pen.penup()
         if(i in graph_data['mergednodes'] and mode == 2):
-            pen.setposition(((2 * graph_data['room_x'][i] ) * scale / 2) + origin['x'] + 5,
+            room1_center = (((2 * graph_data['room_x'][i] ) * scale / 2) + origin['x'] + 5,
                             ((2 * graph_data['room_y'][i] + graph_data['room_height'][i]) * scale / 2) + origin['y'])
-            pen.write(i)
-            pen.penup()       
-    value = 1
-    if(len(graph_data['area']) != 0):
-        pen.setposition(dim[0]* scale + origin['x']+50, dim[1]* scale + origin['y']-30)
-        pen.write('Area of Each Room' ,font=("Arial", 20, "normal"))
-        for i in range(0,len(graph_data['area'])):
-            if i in graph_data['extranodes']:
-                continue
-            pen.setposition(dim[0]* scale + origin['x']+50, dim[1]* scale + origin['y']-30-value*30)
-            pen.write('Room ' + str(i)+ ': '+ str(graph_data['area'][i]),font=("Arial", 15, "normal"))
-            pen.penup()
-            value+=1
+            label = Text("Room y", color=WHITE).move_to(room1_center)
+            # pen.write(i)
+            # pen.penup()       
+        labels.add(label)
+    # value = 1
+    # if(len(graph_data['area']) != 0):
+    #     pen.setposition(dim[0]* scale + origin['x']+50, dim[1]* scale + origin['y']-30)
+    #     pen.write('Area of Each Room' ,font=("Arial", 20, "normal"))
+    #     for i in range(0,len(graph_data['area'])):
+    #         if i in graph_data['extranodes']:
+    #             continue
+    #         pen.setposition(dim[0]* scale + origin['x']+50, dim[1]* scale + origin['y']-30-value*30)
+    #         pen.write('Room ' + str(i)+ ': '+ str(graph_data['area'][i]),font=("Arial", 15, "normal"))
+    #         pen.penup()
+    #         value+=1
+
+    
 
 def main():                
     graph = {'room_x': [0., 1., 0.], 'room_y': [0., 1., 1.], 'room_width': [2., 1., 1.], 'room_height': [1., 1., 1.], 'area': [], 'extranodes': [], 'mergednodes': [], 'irreg_nodes': []}
@@ -163,5 +182,5 @@ def main():
     'mergednodes': graph.mergednodes,
     'irreg_nodes': graph.irreg_nodes1
     }
-    draw_rdg(graph_data)
+    draw_rdg(graph_data,1,1,['red','blue','green'],['Kitchen','Bedroom','Hall'],0)
 
